@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FD Magazine</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/3/turn.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <script src="https://mark-rolich.github.io/Event.js/Event.js"></script>
+    <script src="https://mark-rolich.github.io/Magnifier.js/Magnifier.js"></script>
+    <link rel="stylesheet" href="magnifier.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div id="magazine-container" style="display: none;">
+        <div class="wrapper">
+            <div class="aspect">
+                <div class="aspect-inner">
+                    <div class="flipbook" id="flipbook">
+                    </div>
+                </div>
+            </div>
+            <div class="controls">
+                <button id="prev-btn"></button>
+                <span id="page-num">Page 1</span>
+                <button id="next-btn"></button>
+                <button id="close-btn">✕</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="editions-container" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); z-index: 1000;">
+        <div class="editions-content">
+            <div class="editions-header">
+                <h2 id="editions-title">Magazine Editions</h2>
+                <button id="create-edition" class="create-edition-btn">Create New Edition</button>
+            </div>
+            
+            <div id="editions-list">
+            </div>
+            
+            <div class="editions-controls">
+                <button id="close-editions">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="edition-dialog" class="custom-dialog" style="display: none;">
+        <div class="dialog-content">
+            <h2>Create New Edition</h2>
+            <div class="input-group">
+                <label for="edition-title">Edition Title:</label>
+                <input type="text" id="edition-title" placeholder="Enter edition title">
+            </div>
+            <div class="dialog-buttons">
+                <button id="create-edition-confirm">Create</button>
+                <button id="create-edition-cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="editor-container" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); z-index: 1000;">
+        <div class="editor-content">
+            <div class="editor-header">
+                <h2 id="editor-title"></h2>
+                <div class="editor-header-controls">
+                    <span id="current-edition-title"></span>
+                    <button id="publish-edition" class="publish-btn">Publish Edition</button>
+                    <button id="back-to-editions" class="back-btn">← Back to Editions</button>
+                </div>
+            </div>
+            
+            <div class="url-input-area">
+                <input type="text" id="image-url">
+                <button id="add-url"></button>
+            </div>
+
+            <div id="page-list" style="display: flex; flex-wrap: wrap; gap: 15px; min-height: 200px; max-height: 500px; overflow-y: auto; padding: 15px; background: rgba(16, 18, 28, 0.4); border-radius: 5px; border: 1px solid rgba(88, 103, 216, 0.3);"></div>
+            
+            <div class="editor-controls">
+                <button id="save-changes"></button>
+                <button id="close-editor"></button>
+            </div>
+        </div>
+    </div>
+    <div class="notification" id="notification"></div>
+    <script src="script.min.js"></script>
+</body>
+</html> 

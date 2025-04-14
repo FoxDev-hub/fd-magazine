@@ -1,0 +1,32 @@
+.magnifier-thumb-wrapper {
+    position: relative;
+    display: block;
+}
+
+.magnifier-lens {
+    position: absolute;
+    border: solid 1px #ccc;
+    z-index: 1000;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    background: #fff;
+    cursor: none;
+    border-radius: 50%;
+}
+
+.magnifier-loader {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border: solid 1px #ccc;
+    color: #fff;
+    text-align: center;
+    background: rgba(50, 50, 50, 0.5);
+    z-index: 1000;
+}
+
+.magnifier-large {
+    position: absolute;
+    z-index: 100;
+} 
