@@ -20,6 +20,7 @@ local function forceFocusOff()
     TriggerEvent("fd-magazine:client:forceFocusOff")
 end
 
+-- Add these events to handle different scenarios
 RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
     isReadingMagazine = false
     SetNuiFocus(false, false)
@@ -57,22 +58,28 @@ AddEventHandler('onResourceStop', function(resourceName)
     stopMagazineAnimation()
 end)
 
+-- Check if player has required job
 local function hasRequiredJob()
     local Player = QBCore.Functions.GetPlayerData()
     if not Player then return false end
     
+    -- Check against config jobs
     return Config.AuthorizedJobs[Player.job.name] == true
 end
 
+-- Add this function to send config to NUI
 local function SendConfigToNUI()
     SendNUIMessage({
         config = Config
     })
 end
 
+-- Magazine reading UI
 local function openMagazine(pages, edition)
+    -- Close inventory first
     exports.ox_inventory:closeInventory()
 
+    -- Play animation using config settings
     local anim = Config.Magazine.animation
     RequestAnimDict(anim.dict)
     while not HasAnimDictLoaded(anim.dict) do
@@ -81,37 +88,42 @@ local function openMagazine(pages, edition)
     TaskPlayAnim(PlayerPedId(), anim.dict, anim.name, 8.0, -8.0, -1, 49, 0, false, false, false)
 
     isReadingMagazine = true
+    -- Set NUI focus with keyboard input enabled
     SetNuiFocus(true, true)
-    SetNuiFocusKeepInput(true)
+    SetNuiFocusKeepInput(true) -- This allows keyboard inputs while NUI is focused
     
+    -- Disable game controls except what we need
     CreateThread(function()
         while isReadingMagazine do
+            -- Disable all controls first
             DisableAllControlActions(0)
             DisableAllControlActions(1)
             DisableAllControlActions(2)
             
-            DisableControlAction(0, 199, true)
-            DisableControlAction(0, 200, true)
-            DisableControlAction(0, 244, true)
-            DisableControlAction(0, 56, true)
-            DisableControlAction(0, 57, true)
-            DisableControlAction(0, 344, true)
+            -- Disable specific menus and map
+            DisableControlAction(0, 199, true) -- Pause Menu
+            DisableControlAction(0, 200, true) -- ESC Menu
+            DisableControlAction(0, 244, true) -- M key
+            DisableControlAction(0, 56, true) -- F9
+            DisableControlAction(0, 57, true) -- F10
+            DisableControlAction(0, 344, true) -- F11
             
-            EnableControlAction(0, 174, true)
-            EnableControlAction(0, 175, true)
-            EnableControlAction(0, 177, true)
-            EnableControlAction(0, 249, true)
-            EnableControlAction(0, 245, true)
-            EnableControlAction(0, 32, true)
-            EnableControlAction(0, 34, true)
-            EnableControlAction(0, 33, true)
-            EnableControlAction(0, 35, true)
+            -- Enable only the controls we need
+            EnableControlAction(0, 174, true) -- Left Arrow
+            EnableControlAction(0, 175, true) -- Right Arrow
+            EnableControlAction(0, 177, true) -- ESC
+            EnableControlAction(0, 249, true) -- N key for voice chat
+            EnableControlAction(0, 245, true) -- T key for chat
+            EnableControlAction(0, 32, true) -- W key
+            EnableControlAction(0, 34, true) -- A key
+            EnableControlAction(0, 33, true) -- S key
+            EnableControlAction(0, 35, true) -- D key
             
             Wait(0)
         end
     end)
 
-    SendConfigToNUI()
+    SendConfigToNUI() -- Send config first
     SendNUIMessage({
         action = "openMagazine",
         pages = pages,
@@ -119,6 +131,7 @@ local function openMagazine(pages, edition)
     })
 end
 
+-- Magazine editing UI
 local function openEditor()
     local Player = QBCore.Functions.GetPlayerData()
     
@@ -127,11 +140,13 @@ local function openEditor()
         return
     end
     
+    -- Instead of opening editor directly, first show editions list
     SetNuiFocus(true, true)
-    SendConfigToNUI()
+    SendConfigToNUI() -- Send config first
     TriggerServerEvent('fd-magazine:server:getEditions')
 end
 
+-- Function to open editor for a specific edition
 local function openEditorForEdition(edition, pages, readOnly)
     currentEdition = edition
     isEditionsOpen = false
@@ -151,6 +166,7 @@ local function openEditorForEdition(edition, pages, readOnly)
     end
 end
 
+-- Create marker for editing location
 CreateThread(function()
     while true do
         Wait(0)
@@ -189,12 +205,14 @@ end)
 -- Item use event
 RegisterNetEvent('fd-magazine:client:useMagazine', function(itemData)
     if not isReadingMagazine then
+        -- Pass the item data to the server
         TriggerServerEvent('fd-magazine:server:getMagazinePages', false, itemData)
     end
 end)
 
 -- Receive magazine pages
 RegisterNetEvent('fd-magazine:client:receiveMagazinePages', function(pages, isEditor, edition, readOnly)
+    -- Ensure pages is always an array
     if not pages then
         pages = {}
     end
@@ -217,6 +235,7 @@ end)
 
 -- Receive editions list
 RegisterNetEvent('fd-magazine:client:receiveEditions', function(editions)
+    -- Check if this is an update to an already open editions list
     if isEditionsOpen then
         SendNUIMessage({
             action = 'editionsUpdated',
@@ -239,6 +258,7 @@ RegisterNUICallback('closeMagazine', function(data, cb)
     SendNUIMessage({
         action = "hide"
     })
+    -- Stop animation
     stopMagazineAnimation()
     cb('ok')
 end)
@@ -249,11 +269,13 @@ RegisterNUICallback('updatePages', function(data)
     end
 end)
 
+-- Add this with your other RegisterNUICallback functions
 RegisterNUICallback('notify', function(data, cb)
     QBCore.Functions.Notify(data.message, data.type)
     cb('ok')
 end)
 
+-- Add these RegisterNUICallback functions
 RegisterNUICallback('closeEditor', function(data, cb)
     isReadingMagazine = false
     forceFocusOff()
@@ -272,6 +294,7 @@ RegisterNUICallback('savePages', function(data, cb)
     cb({})
 end)
 
+-- Modify the ESC key handling thread
 Citizen.CreateThread(function()
     while true do
         Citizen.Wait(0)
@@ -282,16 +305,18 @@ Citizen.CreateThread(function()
                 action = "hide"
             })
             stopMagazineAnimation()
+            -- Re-enable all controls
             EnableAllControlActions(0)
             EnableAllControlActions(1)
             EnableAllControlActions(2)
-            Wait(500)
+            Wait(500) -- Add a small delay before allowing map to be opened again
         end
     end
 end)
 
 RegisterNetEvent("fd-magazine:client:forceFocusOff")
 AddEventHandler("fd-magazine:client:forceFocusOff", function()
+    -- Create a thread that repeatedly turns off focus for a short period
     Citizen.CreateThread(function()
         for i = 1, 10 do
             Citizen.Wait(100)
@@ -301,6 +326,7 @@ AddEventHandler("fd-magazine:client:forceFocusOff", function()
     end)
 end)
 
+-- Add this function at the top of your client.lua
 function DrawText3D(x, y, z, text)
     SetTextScale(0.35, 0.35)
     SetTextFont(4)
@@ -316,12 +342,14 @@ function DrawText3D(x, y, z, text)
     ClearDrawOrigin()
 end
 
+-- Add this after your variables at the top
 CreateThread(function()
+    -- Create blip for magazine editor
     local blip = AddBlipForCoord(Config.EditLocation.x, Config.EditLocation.y, Config.EditLocation.z)
-    SetBlipSprite(blip, 184)
+    SetBlipSprite(blip, 184) -- Change number for different icon
     SetBlipDisplay(blip, 4)
     SetBlipScale(blip, 0.8)
-    SetBlipColour(blip, 2)
+    SetBlipColour(blip, 2) -- Red color
     SetBlipAsShortRange(blip, true)
     BeginTextCommandSetBlipName("STRING")
     AddTextComponentString(Config.Translations.editor.blipName)
@@ -333,6 +361,7 @@ RegisterNUICallback('clearMagazine', function(data, cb)
     cb({})
 end)
 
+-- Add this to your existing UseItem function or wherever you open the magazine
 RegisterNetEvent('fd-magazine:client:openMagazine')
 AddEventHandler('fd-magazine:client:openMagazine', function()
     openMagazine()
@@ -344,6 +373,7 @@ RegisterNUICallback('updatePageOrder', function(data, cb)
     cb({})
 end)
 
+-- Add this NUI callback for focus control
 RegisterNUICallback('setNuiFocus', function(data, cb)
     if isReadingMagazine or data.focus then
         SetNuiFocus(data.focus, data.cursor)
@@ -351,14 +381,19 @@ RegisterNUICallback('setNuiFocus', function(data, cb)
     cb('ok')
 end)
 
+-- Initialize when resource starts
 CreateThread(function()
+    -- Wait for QBCore to be ready
     while QBCore == nil do
         QBCore = exports['qb-core']:GetCoreObject()
         Wait(100)
     end
 
+    -- Only initialize newsstands if explicitly enabled
     if Config.Magazine.enableBuyFromProps == true then
+        -- Initialize target system based on configuration
         if Config.TargetSystem == 'qb' then
+            -- QB-Target Configuration
             exports['qb-target']:AddTargetModel(Config.NewstandProps, {
                 options = {
                     {
@@ -372,6 +407,7 @@ CreateThread(function()
                 distance = 2.0
             })
         elseif Config.TargetSystem == 'ox' then
+            -- OX-Target Configuration
             exports.ox_target:addModel(Config.NewstandProps, {
                 {
                     name = 'buy_magazine',
@@ -386,6 +422,7 @@ CreateThread(function()
     end
 end)
 
+-- Add these RegisterNUICallback functions for edition handling
 RegisterNUICallback('getEditionPages', function(data, cb)
     local editionNumber = data.edition_number
     local readOnly = data.read_only or false
@@ -400,11 +437,14 @@ RegisterNUICallback('createEdition', function(data, cb)
 end)
 
 RegisterNUICallback('closeEditions', function(data, cb)
+    -- Reset state flags
     isReadingMagazine = false
     isEditionsOpen = false
     
+    -- Force focus off to ensure input returns to the game
     forceFocusOff()
     
+    -- Hide all UI elements
     SendNUIMessage({
         action = "hide"
     })
@@ -413,38 +453,48 @@ RegisterNUICallback('closeEditions', function(data, cb)
 end)
 
 RegisterNUICallback('backToEditions', function(data, cb)
+    -- Reset the editions open flag
     isEditionsOpen = true
     
+    -- Request editions list
     TriggerServerEvent('fd-magazine:server:getEditions')
     
+    -- Ensure focus is maintained
     SetNuiFocus(true, true)
     
     cb('ok')
 end)
 
+-- Add this with your other RegisterNUICallback functions
 RegisterNUICallback('publishEdition', function(data, cb)
     local editionNumber = data.edition_number
     TriggerServerEvent('fd-magazine:server:publishEdition', editionNumber)
     cb('ok')
 end)
 
+-- Add this event handler to receive the updated edition data after publishing
 RegisterNetEvent('fd-magazine:client:editionPublished')
 AddEventHandler('fd-magazine:client:editionPublished', function(edition)
+    -- Update the UI to reflect the changes
     SendNUIMessage({
         action = "editionPublished",
         edition = edition
     })
     
+    -- Show a notification
     QBCore.Functions.Notify("Edition published successfully!", "success")
 end)
 
+-- Add debug command
 RegisterCommand('magazinedebug', function()
     TriggerEvent('fd-magazine:client:useMagazine', {
         metadata = {
-            edition = 1
+            edition = 1  -- Test with edition 1
+        }
     })
 end, false)
 
+-- Add this at the top of the file, after your variables
 exports('useMagazine', function(data, slot)
     if not isReadingMagazine then
         local itemData = {
