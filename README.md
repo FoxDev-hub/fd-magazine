@@ -212,9 +212,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 🤝 Support
 
-- Discord: [Your Discord Server]
-- GitHub Issues: [Repository Issues]
-- Documentation: [Wiki Link]
+- Discord: [https://discord.gg/tMG28MWU5D]
 
 ## 🙏 Credits
 
