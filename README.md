@@ -1,6 +1,6 @@
 # QB-Magazine
 
-An interactive magazine system for FiveM servers using the QB-Core framework. Create, edit, and read digital magazines in-game with a modern and intuitive interface. Support for multiple editions and player-specific magazine ownership.
+An interactive magazine system for FiveM servers using the QB-Core/Qbox framework. Create, edit, and read digital magazines in-game with a modern and intuitive interface. Support for multiple editions and player-specific magazine ownership.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Version](https://img.shields.io/badge/version-1.1.0-green.svg)
