@@ -1,4 +1,4 @@
-# QB-Magazine
+# FoxDev-Magazine
 
 An interactive magazine system for FiveM servers using the QB-Core/Qbox framework. Create, edit, and read digital magazines in-game with a modern and intuitive interface. Support for multiple editions and player-specific magazine ownership.
 
