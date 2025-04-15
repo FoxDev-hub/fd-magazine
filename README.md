@@ -46,8 +46,7 @@ An interactive magazine system for FiveM servers using the QB-Core/Qbox framewor
 
 1. **Download & Place Files**
    ```bash
-   cd resources
-   git clone https://github.com/yourusername/qb-magazine
+   git clone https://github.com/FoxDev-hub/FoxDev-magazine.git
    ```
 
 2. **Database Setup**
