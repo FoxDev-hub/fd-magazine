@@ -38,10 +38,9 @@ An interactive magazine system for FiveM servers using the QB-Core framework. Cr
 ## 📋 Requirements
 
 - QB-Core Framework
-- oxmysql
 - ox_inventory
-- FiveM Server
-- QBox (March 2025 or newer)
+- qb_inventory
+- QBox
 
 ## ⚙️ Installation
 
@@ -60,8 +59,7 @@ An interactive magazine system for FiveM servers using the QB-Core framework. Cr
 
 3. **Add to Server.cfg**
    ```lua
-   ensure ox_inventory  # Make sure this loads first
-   ensure fd-magazine
+   ensure FoxDev-magazine
    ```
 
 4. **OX Inventory Setup**
@@ -126,19 +124,11 @@ Config.AllowedImageTypes = {
 4. Press ESC to close
 
 ### Editing a Magazine
-1. Use `/magazineeditor` command
-2. Select or create an edition
-3. Add pages via URL input
-4. Drag & drop to reorder
-5. Save changes
-6. Publish when ready
-
-### Managing Editions
-1. Create new editions with `/createedition`
-2. Add pages to specific editions
-3. Set active status
-4. Publish when ready
-5. Track player ownership
+1. Select or create an edition
+2. Add pages via URL input
+3. Drag & drop to reorder
+4. Save changes
+5. Publish when ready
 
 ## 🖼️ Image Guidelines
 
@@ -212,13 +202,11 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 🤝 Support
 
-- Discord: [https://discord.gg/tMG28MWU5D]
+- Discord: [https://discord.gg/ASTjxYZqVP]
 
 ## 🙏 Credits
 
-- QB-Core Framework Team
-- Turn.js Library
-- FiveM Community
+- FoxDev
 
 ## 🔄 Updates
 
