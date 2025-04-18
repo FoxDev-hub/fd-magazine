@@ -56,12 +56,14 @@ An interactive magazine system for FiveM servers using the QB-Core/Qbox framewor
 
    Import the SQL file from `sql/magazine.sql` which will create all necessary tables and indexes.
 
-3. **Add to Server.cfg**
+3. name the folder "fd-magazine"
+
+4. **Add to Server.cfg**
    ```lua
-   ensure FoxDev-magazine
+   ensure fd-magazine
    ```
 
-4. **OX Inventory Setup**
+5. **OX Inventory Setup**
    Add to your `ox_inventory/data/items.lua`:
    ```lua
    ['magazine'] = {
@@ -79,37 +81,14 @@ An interactive magazine system for FiveM servers using the QB-Core/Qbox framewor
 
 ## 🔧 Configuration
 
-Edit `config.lua` to customize:
-
-```lua
-Config = {}
+Edit `config.lua` to customize
 
 -- Jobs that can access the editor
 Config.AuthorizedJobs = {
     ['news'] = true,
     ['admin'] = true
 }
-
--- Item name in QB-Core shared items
-Config.MagazineItem = 'magazine'
-
-
--- Image Settings
-Config.MaxImageSize = 5 * 1024 * 1024  -- 5MB
-Config.AllowedImageTypes = {
-    'jpg',
-    'jpeg',
-    'png',
-    'gif'
-}
 ```
-
-## 📱 Commands
-
-- `/magazine` - Open owned magazine editions
-- `/magazineeditor` - Open editor (authorized jobs only)
-- `/createedition [title]` - Create new edition
-- `/publishedition [number]` - Publish an edition
 
 ## 🎮 Usage
 
@@ -188,7 +167,7 @@ qb-magazine/
 ├── html/
 │   ├── index.html
 │   ├── style.css
-│   └── script.js
+│   └── script.min.js
 ├── sql/
 │   └── magazine.sql
 ├── config.lua
