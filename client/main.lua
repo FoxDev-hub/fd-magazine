@@ -5,7 +5,6 @@ local magazinePages = {}
 local currentEdition = nil
 local isEditionsOpen = false
 
--- Function to stop magazine animation
 local function stopMagazineAnimation()
     local anim = Config.Magazine.animation
     ClearPedTasks(PlayerPedId()) -- Force clear all animations
@@ -20,7 +19,6 @@ local function forceFocusOff()
     TriggerEvent("fd-magazine:client:forceFocusOff")
 end
 
--- Add these events to handle different scenarios
 RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
     isReadingMagazine = false
     SetNuiFocus(false, false)
@@ -58,25 +56,20 @@ AddEventHandler('onResourceStop', function(resourceName)
     stopMagazineAnimation()
 end)
 
--- Check if player has required job
 local function hasRequiredJob()
     local Player = QBCore.Functions.GetPlayerData()
     if not Player then return false end
     
-    -- Check against config jobs
     return Config.AuthorizedJobs[Player.job.name] == true
 end
 
--- Add this function to send config to NUI
 local function SendConfigToNUI()
     SendNUIMessage({
         config = Config
     })
 end
 
--- Magazine reading UI
 local function openMagazine(pages, edition)
-    -- Close inventory based on configured type
     if Config.InventoryType == 'ox' then
         exports.ox_inventory:closeInventory()
     elseif Config.InventoryType == 'qb' then
@@ -94,19 +87,15 @@ local function openMagazine(pages, edition)
     TaskPlayAnim(PlayerPedId(), anim.dict, anim.name, 8.0, -8.0, -1, 49, 0, false, false, false)
 
     isReadingMagazine = true
-    -- Set NUI focus with keyboard input enabled
     SetNuiFocus(true, true)
-    SetNuiFocusKeepInput(true) -- This allows keyboard inputs while NUI is focused
+    SetNuiFocusKeepInput(true)
     
-    -- Disable game controls except what we need
     CreateThread(function()
         while isReadingMagazine do
-            -- Disable all controls first
             DisableAllControlActions(0)
             DisableAllControlActions(1)
             DisableAllControlActions(2)
             
-            -- Disable specific menus and map
             DisableControlAction(0, 199, true) -- Pause Menu
             DisableControlAction(0, 200, true) -- ESC Menu
             DisableControlAction(0, 244, true) -- M key
@@ -114,7 +103,6 @@ local function openMagazine(pages, edition)
             DisableControlAction(0, 57, true) -- F10
             DisableControlAction(0, 344, true) -- F11
             
-            -- Enable only the controls we need
             EnableControlAction(0, 174, true) -- Left Arrow
             EnableControlAction(0, 175, true) -- Right Arrow
             EnableControlAction(0, 177, true) -- ESC
@@ -137,7 +125,6 @@ local function openMagazine(pages, edition)
     })
 end
 
--- Magazine editing UI
 local function openEditor()
     local Player = QBCore.Functions.GetPlayerData()
     
@@ -146,13 +133,11 @@ local function openEditor()
         return
     end
     
-    -- Instead of opening editor directly, first show editions list
     SetNuiFocus(true, true)
     SendConfigToNUI() -- Send config first
     TriggerServerEvent('fd-magazine:server:getEditions')
 end
 
--- Function to open editor for a specific edition
 local function openEditorForEdition(edition, pages, readOnly)
     currentEdition = edition
     isEditionsOpen = false
