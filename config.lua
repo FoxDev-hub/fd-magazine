@@ -1,10 +1,10 @@
 Config = {}
 
 -- Inventory system: 'qb', 'ox', or 'qx'
-Config.InventoryType = 'ox'
+Config.InventoryType = 'qb'
 
 -- Target system: 'qb' or 'ox'
-Config.TargetSystem = 'ox'
+Config.TargetSystem = 'qb'
 
 -- Edit location
 Config.EditLocation = vector3(-1058.06, -248.11, 44.02)
@@ -102,7 +102,8 @@ Config.Translations = {
         deleteBtn = "×",
         pageAltText = "Page",
         editText = "Press [E] to edit magazine",
-        blipName = "Magazine Editor"
+        blipName = "Magazine Editor",
+        targetText = "Magazine Editor"
     },
     confirmDialog = {
         title = "Confirm Action",

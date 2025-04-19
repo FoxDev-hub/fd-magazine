@@ -172,8 +172,45 @@ local function openEditorForEdition(edition, pages, readOnly)
     end
 end
 
--- Create marker for editing location
 CreateThread(function()
+    if Config.TargetSystem == 'qb' then
+        exports['qb-target']:AddBoxZone("magazine_editor", Config.EditLocation, 1.5, 1.5, {
+            name = "magazine_editor",
+            heading = 0,
+            debugPoly = Config.Debug,
+            minZ = Config.EditLocation.z - 1.0,
+            maxZ = Config.EditLocation.z + 1.0,
+        }, {
+            options = {
+                {
+                    icon = "fas fa-newspaper",
+                    label = Config.Translations.editor.targetText,
+                    action = function()
+                        openEditor()
+                    end
+                }
+            },
+            distance = 2.0
+        })
+    elseif Config.TargetSystem == 'ox' then
+        exports.ox_target:addBoxZone({
+            coords = Config.EditLocation,
+            size = vec3(1.5, 1.5, 2.0),
+            rotation = 0,
+            debug = Config.Debug,
+            options = {
+                {
+                    name = 'magazine_editor',
+                    icon = "fas fa-newspaper",
+                    label = Config.Translations.editor.targetText,
+                    onSelect = function()
+                        openEditor()
+                    end
+                }
+            }
+        })
+    end
+
     while true do
         Wait(0)
         local ped = PlayerPedId()
@@ -208,17 +245,13 @@ CreateThread(function()
     end
 end)
 
--- Item use event
 RegisterNetEvent('fd-magazine:client:useMagazine', function(itemData)
     if not isReadingMagazine then
-        -- Pass the item data to the server
         TriggerServerEvent('fd-magazine:server:getMagazinePages', false, itemData)
     end
 end)
 
--- Receive magazine pages
 RegisterNetEvent('fd-magazine:client:receiveMagazinePages', function(pages, isEditor, edition, readOnly)
-    -- Ensure pages is always an array
     if not pages then
         pages = {}
     end
@@ -239,9 +272,7 @@ RegisterNetEvent('fd-magazine:client:receiveMagazinePages', function(pages, isEd
     end
 end)
 
--- Receive editions list
 RegisterNetEvent('fd-magazine:client:receiveEditions', function(editions)
-    -- Check if this is an update to an already open editions list
     if isEditionsOpen then
         SendNUIMessage({
             action = 'editionsUpdated',
@@ -257,14 +288,12 @@ RegisterNetEvent('fd-magazine:client:receiveEditions', function(editions)
     end
 end)
 
--- Close magazine
 RegisterNUICallback('closeMagazine', function(data, cb)
     isReadingMagazine = false
     forceFocusOff()
     SendNUIMessage({
         action = "hide"
     })
-    -- Stop animation
     stopMagazineAnimation()
     cb('ok')
 end)
@@ -275,13 +304,11 @@ RegisterNUICallback('updatePages', function(data)
     end
 end)
 
--- Add this with your other RegisterNUICallback functions
 RegisterNUICallback('notify', function(data, cb)
     QBCore.Functions.Notify(data.message, data.type)
     cb('ok')
 end)
 
--- Add these RegisterNUICallback functions
 RegisterNUICallback('closeEditor', function(data, cb)
     isReadingMagazine = false
     forceFocusOff()
@@ -300,7 +327,6 @@ RegisterNUICallback('savePages', function(data, cb)
     cb({})
 end)
 
--- Modify the ESC key handling thread
 Citizen.CreateThread(function()
     while true do
         Citizen.Wait(0)
@@ -322,7 +348,6 @@ end)
 
 RegisterNetEvent("fd-magazine:client:forceFocusOff")
 AddEventHandler("fd-magazine:client:forceFocusOff", function()
-    -- Create a thread that repeatedly turns off focus for a short period
     Citizen.CreateThread(function()
         for i = 1, 10 do
             Citizen.Wait(100)
@@ -332,7 +357,6 @@ AddEventHandler("fd-magazine:client:forceFocusOff", function()
     end)
 end)
 
--- Add this function at the top of your client.lua
 function DrawText3D(x, y, z, text)
     SetTextScale(0.35, 0.35)
     SetTextFont(4)
@@ -348,9 +372,7 @@ function DrawText3D(x, y, z, text)
     ClearDrawOrigin()
 end
 
--- Add this after your variables at the top
 CreateThread(function()
-    -- Create blip for magazine editor
     local blip = AddBlipForCoord(Config.EditLocation.x, Config.EditLocation.y, Config.EditLocation.z)
     SetBlipSprite(blip, 184) -- Change number for different icon
     SetBlipDisplay(blip, 4)
@@ -367,7 +389,6 @@ RegisterNUICallback('clearMagazine', function(data, cb)
     cb({})
 end)
 
--- Add this to your existing UseItem function or wherever you open the magazine
 RegisterNetEvent('fd-magazine:client:openMagazine')
 AddEventHandler('fd-magazine:client:openMagazine', function()
     openMagazine()
@@ -379,7 +400,6 @@ RegisterNUICallback('updatePageOrder', function(data, cb)
     cb({})
 end)
 
--- Add this NUI callback for focus control
 RegisterNUICallback('setNuiFocus', function(data, cb)
     if isReadingMagazine or data.focus then
         SetNuiFocus(data.focus, data.cursor)
@@ -387,19 +407,14 @@ RegisterNUICallback('setNuiFocus', function(data, cb)
     cb('ok')
 end)
 
--- Initialize when resource starts
 CreateThread(function()
-    -- Wait for QBCore to be ready
     while QBCore == nil do
         QBCore = exports['qb-core']:GetCoreObject()
         Wait(100)
     end
 
-    -- Only initialize newsstands if explicitly enabled
     if Config.Magazine.enableBuyFromProps == true then
-        -- Initialize target system based on configuration
         if Config.TargetSystem == 'qb' then
-            -- QB-Target Configuration
             exports['qb-target']:AddTargetModel(Config.NewstandProps, {
                 options = {
                     {
@@ -413,7 +428,6 @@ CreateThread(function()
                 distance = 2.0
             })
         elseif Config.TargetSystem == 'ox' then
-            -- OX-Target Configuration
             exports.ox_target:addModel(Config.NewstandProps, {
                 {
                     name = 'buy_magazine',
@@ -428,7 +442,6 @@ CreateThread(function()
     end
 end)
 
--- Add these RegisterNUICallback functions for edition handling
 RegisterNUICallback('getEditionPages', function(data, cb)
     local editionNumber = data.edition_number
     local readOnly = data.read_only or false
@@ -443,14 +456,11 @@ RegisterNUICallback('createEdition', function(data, cb)
 end)
 
 RegisterNUICallback('closeEditions', function(data, cb)
-    -- Reset state flags
     isReadingMagazine = false
     isEditionsOpen = false
     
-    -- Force focus off to ensure input returns to the game
     forceFocusOff()
     
-    -- Hide all UI elements
     SendNUIMessage({
         action = "hide"
     })
@@ -459,39 +469,31 @@ RegisterNUICallback('closeEditions', function(data, cb)
 end)
 
 RegisterNUICallback('backToEditions', function(data, cb)
-    -- Reset the editions open flag
     isEditionsOpen = true
     
-    -- Request editions list
     TriggerServerEvent('fd-magazine:server:getEditions')
     
-    -- Ensure focus is maintained
     SetNuiFocus(true, true)
     
     cb('ok')
 end)
 
--- Add this with your other RegisterNUICallback functions
 RegisterNUICallback('publishEdition', function(data, cb)
     local editionNumber = data.edition_number
     TriggerServerEvent('fd-magazine:server:publishEdition', editionNumber)
     cb('ok')
 end)
 
--- Add this event handler to receive the updated edition data after publishing
 RegisterNetEvent('fd-magazine:client:editionPublished')
 AddEventHandler('fd-magazine:client:editionPublished', function(edition)
-    -- Update the UI to reflect the changes
     SendNUIMessage({
         action = "editionPublished",
         edition = edition
     })
     
-    -- Show a notification
     QBCore.Functions.Notify("Edition published successfully!", "success")
 end)
 
--- Add debug command
 RegisterCommand('magazinedebug', function()
     TriggerEvent('fd-magazine:client:useMagazine', {
         metadata = {
@@ -500,7 +502,6 @@ RegisterCommand('magazinedebug', function()
     })
 end, false)
 
--- Add this at the top of the file, after your variables
 exports('useMagazine', function(data, slot)
     if not isReadingMagazine then
         local itemData = {
