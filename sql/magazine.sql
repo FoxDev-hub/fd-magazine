@@ -1,4 +1,5 @@
 -- Drop existing tables if they exist
+DROP TABLE IF EXISTS `player_magazines`;
 DROP TABLE IF EXISTS `magazine_pages`;
 DROP TABLE IF EXISTS `magazine_editions`;
 

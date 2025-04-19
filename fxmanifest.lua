@@ -1,8 +1,7 @@
 fx_version 'cerulean'
 game 'gta5'
-lua54 'yes'
 
-description 'Newspaper Magazine'
+description 'QB-Magazine'
 
 shared_scripts {
     'config.lua'
@@ -23,7 +22,7 @@ files {
     'html/index.html',
     'html/style.css',
     'html/magnifier.css',
-    'html/script.min.js',
+    'html/script.js',
     'html/img/*.jpg',
     'html/img/*.png',
 } 
