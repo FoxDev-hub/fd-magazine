@@ -76,8 +76,14 @@ end
 
 -- Magazine reading UI
 local function openMagazine(pages, edition)
-    -- Close inventory first
-    exports.ox_inventory:closeInventory()
+    -- Close inventory based on configured type
+    if Config.InventoryType == 'ox' then
+        exports.ox_inventory:closeInventory()
+    elseif Config.InventoryType == 'qb' then
+        TriggerEvent('inventory:client:closeInventory')
+    elseif Config.InventoryType == 'qx' then
+        exports['qx-inventory']:closeInventory()
+    end
 
     -- Play animation using config settings
     local anim = Config.Magazine.animation
