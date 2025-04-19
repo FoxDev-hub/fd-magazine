@@ -38,46 +38,48 @@ An interactive magazine system for FiveM servers using the QB-Core/Qbox framewor
 ## 📋 Requirements
 
 - QB-Core Framework
-- ox_inventory
-- qb_inventory
 - QBox
 
-## ⚙️ Installation
+## 📦 Installation
 
-1. **Download & Place Files**
-   ```bash
-   git clone https://github.com/FoxDev-hub/FoxDev-magazine.git
-   ```
+1. Download the resource
+2. Place it in your resources folder, **The root folder has to be called "fd-magazine"
+3. Add `ensure fd-magazine` to your server.cfg
+4. Import the SQL file
+5. Configure the resource in `config.lua`
 
-2. **Database Setup**
-   The resource uses three main tables:
-   - `magazine_editions`: Stores different magazine editions
-   - `magazine_pages`: Stores pages for each edition
+## 🛠️ Inventory Setup
 
-   Import the SQL file from `sql/magazine.sql` which will create all necessary tables and indexes.
+### For QB-Inventory (qb-core/shared/items.lua)
+```lua
+['magazine'] = {
+    ['name'] = 'magazine',
+    ['label'] = 'Los Santos Magazine',
+    ['weight'] = 500,
+    ['type'] = 'item',
+    ['image'] = 'magazine.png',
+    ['unique'] = false,
+    ['useable'] = true,
+    ['shouldClose'] = true,
+    ['combinable'] = nil,
+    ['description'] = 'A glossy magazine about Los Santos life'
+}
+```
 
-3. name the folder "fd-magazine"
-
-4. **Add to Server.cfg**
-   ```lua
-   ensure fd-magazine
-   ```
-
-5. **OX Inventory Setup**
-   Add to your `ox_inventory/data/items.lua`:
-   ```lua
-   ['magazine'] = {
-       label = 'Magazine',
-       weight = 500,
-       stack = false,
-       close = false,
-       description = 'A readable magazine',
-       consume = 0,
-       client = {
-           export = 'fd-magazine.useMagazine'
-       }
-   }
-   ```
+### For ox_inventory (ox_inventory/data/items.lua)
+```lua
+['magazine'] = {
+    label = 'Magazine',
+    weight = 500,
+    stack = false,
+    close = false,
+    description = 'A readable magazine',
+    consume = 0,
+    client = {
+        export = 'fd-magazine.useMagazine'
+    }
+}
+```
 
 ## 🔧 Configuration
 
