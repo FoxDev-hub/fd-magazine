@@ -5,12 +5,91 @@ local magazinePages = {}
 local currentEdition = nil
 local isEditionsOpen = false
 
--- Function to stop magazine animation
+local function SendConfigToNUI()
+    local translations = {
+        editor = {
+            title = Config.Translations.editor and Config.Translations.editor.title or "Magazine Editor",
+            save = Config.Translations.editor and Config.Translations.editor.save or "Save",
+            cancel = Config.Translations.editor and Config.Translations.editor.cancel or "Cancel",
+            pageTitle = Config.Translations.editor and Config.Translations.editor.pageTitle or "Page Title",
+            pageContent = Config.Translations.editor and Config.Translations.editor.pageContent or "Page Content",
+            addPage = Config.Translations.editor and Config.Translations.editor.addPage or "Add Page",
+            removePage = Config.Translations.editor and Config.Translations.editor.removePage or "Remove Page",
+            movePageUp = Config.Translations.editor and Config.Translations.editor.movePageUp or "Move Page Up",
+            movePageDown = Config.Translations.editor and Config.Translations.editor.movePageDown or "Move Page Down",
+            noPages = Config.Translations.editor and Config.Translations.editor.noPages or "No pages yet. Add some pages to get started!",
+            urlPlaceholder = Config.Translations.editor and Config.Translations.editor.urlPlaceholder or "Enter image URL",
+            addUrlBtn = Config.Translations.editor and Config.Translations.editor.addUrlBtn or "Add Image",
+            saveBtn = Config.Translations.editor and Config.Translations.editor.saveBtn or "Save Changes",
+            closeBtn = Config.Translations.editor and Config.Translations.editor.closeBtn or "Close Editor",
+            viewingEdition = Config.Translations.editor and Config.Translations.editor.viewingEdition or "Viewing Edition",
+            readOnly = Config.Translations.editor and Config.Translations.editor.readOnly or "Read Only",
+            alreadyPublished = Config.Translations.editor and Config.Translations.editor.alreadyPublished or "Already Published",
+            publishBtn = Config.Translations.editor and Config.Translations.editor.publishBtn or "Publish Edition",
+            backToEditions = Config.Translations.editor and Config.Translations.editor.backToEditions or "Back to Editions",
+            editText = Config.Translations.editor and Config.Translations.editor.editText or "Press [E] to edit magazine",
+            blipName = Config.Translations.editor and Config.Translations.editor.blipName or "Magazine Editor",
+            loadingPages = Config.Translations.editor and Config.Translations.editor.loadingPages or "Loading pages...",
+            targetText = Config.Translations.editor and Config.Translations.editor.targetText or "Edit Magazine"
+        },
+        confirmDialog = {
+            title = Config.Translations.confirmDialog and Config.Translations.confirmDialog.title or "Confirm Action",
+            message = Config.Translations.confirmDialog and Config.Translations.confirmDialog.message or "Are you sure you want to perform this action?",
+            yesBtn = Config.Translations.confirmDialog and Config.Translations.confirmDialog.yesBtn or "Yes",
+            noBtn = Config.Translations.confirmDialog and Config.Translations.confirmDialog.noBtn or "No"
+        },
+        reader = {
+            prevBtn = Config.Translations.reader and Config.Translations.reader.prevBtn or "Previous",
+            nextBtn = Config.Translations.reader and Config.Translations.reader.nextBtn or "Next",
+            closeBtn = Config.Translations.reader and Config.Translations.reader.closeBtn or "Close",
+            pageAltText = Config.Translations.reader and Config.Translations.reader.pageAltText or "Magazine page"
+        },
+        editions = {
+            createBtn = Config.Translations.editions and Config.Translations.editions.createBtn or "Create New Edition",
+            closeBtn = Config.Translations.editions and Config.Translations.editions.closeBtn or "Close",
+            backToEditions = Config.Translations.editions and Config.Translations.editions.backToEditions or "Back to Editions",
+            title = Config.Translations.editions and Config.Translations.editions.title or "Magazine Editions",
+            published = Config.Translations.editions and Config.Translations.editions.published or "Published",
+            draft = Config.Translations.editions and Config.Translations.editions.draft or "Draft",
+            view = Config.Translations.editions and Config.Translations.editions.view or "View",
+            edit = Config.Translations.editions and Config.Translations.editions.edit or "Edit",
+            delete = Config.Translations.editions and Config.Translations.editions.delete or "Delete",
+            createConfirm = Config.Translations.editions and Config.Translations.editions.createConfirm or "Confirm",
+            createCancel = Config.Translations.editions and Config.Translations.editions.createCancel or "Cancel",
+            createTitle = Config.Translations.editions and Config.Translations.editions.createTitle or "Create New Edition",
+            editionTitle = Config.Translations.editions and Config.Translations.editions.editionTitle or "Edition Title",
+            editionTitlePlaceholder = Config.Translations.editions and Config.Translations.editions.editionTitlePlaceholder or "Enter edition title"
+        },
+        notifications = {
+            saved = Config.Translations.notifications and Config.Translations.notifications.saved or "Magazine saved successfully!",
+            error = Config.Translations.notifications and Config.Translations.notifications.error or "An error occurred",
+            deleted = Config.Translations.notifications and Config.Translations.notifications.deleted or "Edition deleted successfully",
+            published = Config.Translations.notifications and Config.Translations.notifications.published or "Edition published successfully",
+            urlRequired = Config.Translations.notifications and Config.Translations.notifications.urlRequired or "Please enter a valid image URL",
+            imageAdded = Config.Translations.notifications and Config.Translations.notifications.imageAdded or "Image added successfully"
+        }
+    }
+    
+    local config = {
+        Theme = Config.Theme,
+        Translations = translations,
+        Magazine = Config.Magazine,
+        InventoryType = Config.InventoryType,
+        TargetSystem = Config.TargetSystem,
+        AuthorizedJobs = Config.AuthorizedJobs,
+        EditLocation = Config.EditLocation
+    }
+
+    SendNUIMessage({
+        config = config
+    })
+end
+
 local function stopMagazineAnimation()
     local anim = Config.Magazine.animation
-    ClearPedTasks(PlayerPedId()) -- Force clear all animations
+    ClearPedTasks(PlayerPedId())
     StopAnimTask(PlayerPedId(), anim.dict, anim.name, 1.0)
-    RemoveAnimDict(anim.dict) -- Clear the animation dictionary from memory
+    RemoveAnimDict(anim.dict) 
 end
 
 local function forceFocusOff()
@@ -20,13 +99,14 @@ local function forceFocusOff()
     TriggerEvent("fd-magazine:client:forceFocusOff")
 end
 
--- Add these events to handle different scenarios
 RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
     isReadingMagazine = false
     SetNuiFocus(false, false)
     SendNUIMessage({
         action = "hide"
     })
+    Wait(1000)
+    SendConfigToNUI()
 end)
 
 RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
@@ -47,6 +127,8 @@ AddEventHandler('onResourceStart', function(resourceName)
     SendNUIMessage({
         action = "hide"
     })
+    Wait(1000)
+    SendConfigToNUI()
 end)
 
 AddEventHandler('onResourceStop', function(resourceName)
@@ -58,25 +140,14 @@ AddEventHandler('onResourceStop', function(resourceName)
     stopMagazineAnimation()
 end)
 
--- Check if player has required job
 local function hasRequiredJob()
     local Player = QBCore.Functions.GetPlayerData()
     if not Player then return false end
     
-    -- Check against config jobs
     return Config.AuthorizedJobs[Player.job.name] == true
 end
 
--- Add this function to send config to NUI
-local function SendConfigToNUI()
-    SendNUIMessage({
-        config = Config
-    })
-end
-
--- Magazine reading UI
 local function openMagazine(pages, edition)
-    -- Close inventory based on configured type
     if Config.InventoryType == 'ox' then
         exports.ox_inventory:closeInventory()
     elseif Config.InventoryType == 'qb' then
@@ -94,19 +165,14 @@ local function openMagazine(pages, edition)
     TaskPlayAnim(PlayerPedId(), anim.dict, anim.name, 8.0, -8.0, -1, 49, 0, false, false, false)
 
     isReadingMagazine = true
-    -- Set NUI focus with keyboard input enabled
     SetNuiFocus(true, true)
-    SetNuiFocusKeepInput(true) -- This allows keyboard inputs while NUI is focused
     
-    -- Disable game controls except what we need
     CreateThread(function()
         while isReadingMagazine do
-            -- Disable all controls first
             DisableAllControlActions(0)
             DisableAllControlActions(1)
             DisableAllControlActions(2)
             
-            -- Disable specific menus and map
             DisableControlAction(0, 199, true) -- Pause Menu
             DisableControlAction(0, 200, true) -- ESC Menu
             DisableControlAction(0, 244, true) -- M key
@@ -129,7 +195,7 @@ local function openMagazine(pages, edition)
         end
     end)
 
-    SendConfigToNUI() -- Send config first
+    SendConfigToNUI() 
     SendNUIMessage({
         action = "openMagazine",
         pages = pages,
@@ -137,7 +203,6 @@ local function openMagazine(pages, edition)
     })
 end
 
--- Magazine editing UI
 local function openEditor()
     local Player = QBCore.Functions.GetPlayerData()
     
@@ -146,13 +211,11 @@ local function openEditor()
         return
     end
     
-    -- Instead of opening editor directly, first show editions list
     SetNuiFocus(true, true)
-    SendConfigToNUI() -- Send config first
+    SendConfigToNUI()
     TriggerServerEvent('fd-magazine:server:getEditions')
 end
 
--- Function to open editor for a specific edition
 local function openEditorForEdition(edition, pages, readOnly)
     currentEdition = edition
     isEditionsOpen = false
@@ -172,8 +235,45 @@ local function openEditorForEdition(edition, pages, readOnly)
     end
 end
 
--- Create marker for editing location
 CreateThread(function()
+    if Config.TargetSystem == 'qb' then
+        exports['qb-target']:AddBoxZone("magazine_editor", Config.EditLocation, 1.5, 1.5, {
+            name = "magazine_editor",
+            heading = 0,
+            debugPoly = Config.Debug,
+            minZ = Config.EditLocation.z - 1.0,
+            maxZ = Config.EditLocation.z + 1.0,
+        }, {
+            options = {
+                {
+                    icon = "fas fa-newspaper",
+                    label = Config.Translations.editor.targetText,
+                    action = function()
+                        openEditor()
+                    end
+                }
+            },
+            distance = 2.0
+        })
+    elseif Config.TargetSystem == 'ox' then
+        exports.ox_target:addBoxZone({
+            coords = Config.EditLocation,
+            size = vec3(1.5, 1.5, 2.0),
+            rotation = 0,
+            debug = Config.Debug,
+            options = {
+                {
+                    name = 'magazine_editor',
+                    icon = "fas fa-newspaper",
+                    label = Config.Translations.editor.targetText,
+                    onSelect = function()
+                        openEditor()
+                    end
+                }
+            }
+        })
+    end
+
     while true do
         Wait(0)
         local ped = PlayerPedId()
@@ -208,17 +308,13 @@ CreateThread(function()
     end
 end)
 
--- Item use event
 RegisterNetEvent('fd-magazine:client:useMagazine', function(itemData)
     if not isReadingMagazine then
-        -- Pass the item data to the server
         TriggerServerEvent('fd-magazine:server:getMagazinePages', false, itemData)
     end
 end)
 
--- Receive magazine pages
 RegisterNetEvent('fd-magazine:client:receiveMagazinePages', function(pages, isEditor, edition, readOnly)
-    -- Ensure pages is always an array
     if not pages then
         pages = {}
     end
@@ -239,9 +335,7 @@ RegisterNetEvent('fd-magazine:client:receiveMagazinePages', function(pages, isEd
     end
 end)
 
--- Receive editions list
 RegisterNetEvent('fd-magazine:client:receiveEditions', function(editions)
-    -- Check if this is an update to an already open editions list
     if isEditionsOpen then
         SendNUIMessage({
             action = 'editionsUpdated',
@@ -257,14 +351,12 @@ RegisterNetEvent('fd-magazine:client:receiveEditions', function(editions)
     end
 end)
 
--- Close magazine
 RegisterNUICallback('closeMagazine', function(data, cb)
     isReadingMagazine = false
     forceFocusOff()
     SendNUIMessage({
         action = "hide"
     })
-    -- Stop animation
     stopMagazineAnimation()
     cb('ok')
 end)
@@ -275,13 +367,11 @@ RegisterNUICallback('updatePages', function(data)
     end
 end)
 
--- Add this with your other RegisterNUICallback functions
 RegisterNUICallback('notify', function(data, cb)
     QBCore.Functions.Notify(data.message, data.type)
     cb('ok')
 end)
 
--- Add these RegisterNUICallback functions
 RegisterNUICallback('closeEditor', function(data, cb)
     isReadingMagazine = false
     forceFocusOff()
@@ -300,11 +390,10 @@ RegisterNUICallback('savePages', function(data, cb)
     cb({})
 end)
 
--- Modify the ESC key handling thread
 Citizen.CreateThread(function()
     while true do
         Citizen.Wait(0)
-        if isReadingMagazine and IsControlJustReleased(0, 177) then -- ESC key
+        if isReadingMagazine and IsControlJustReleased(0, 177) then 
             isReadingMagazine = false
             forceFocusOff()
             SendNUIMessage({
@@ -315,14 +404,13 @@ Citizen.CreateThread(function()
             EnableAllControlActions(0)
             EnableAllControlActions(1)
             EnableAllControlActions(2)
-            Wait(500) -- Add a small delay before allowing map to be opened again
+            Wait(500)
         end
     end
 end)
 
 RegisterNetEvent("fd-magazine:client:forceFocusOff")
 AddEventHandler("fd-magazine:client:forceFocusOff", function()
-    -- Create a thread that repeatedly turns off focus for a short period
     Citizen.CreateThread(function()
         for i = 1, 10 do
             Citizen.Wait(100)
@@ -332,7 +420,6 @@ AddEventHandler("fd-magazine:client:forceFocusOff", function()
     end)
 end)
 
--- Add this function at the top of your client.lua
 function DrawText3D(x, y, z, text)
     SetTextScale(0.35, 0.35)
     SetTextFont(4)
@@ -348,18 +435,18 @@ function DrawText3D(x, y, z, text)
     ClearDrawOrigin()
 end
 
--- Add this after your variables at the top
 CreateThread(function()
-    -- Create blip for magazine editor
-    local blip = AddBlipForCoord(Config.EditLocation.x, Config.EditLocation.y, Config.EditLocation.z)
-    SetBlipSprite(blip, 184) -- Change number for different icon
-    SetBlipDisplay(blip, 4)
-    SetBlipScale(blip, 0.8)
-    SetBlipColour(blip, 2) -- Red color
-    SetBlipAsShortRange(blip, true)
-    BeginTextCommandSetBlipName("STRING")
-    AddTextComponentString(Config.Translations.editor.blipName)
-    EndTextCommandSetBlipName(blip)
+    if Config.Debug then
+        local blip = AddBlipForCoord(Config.EditLocation.x, Config.EditLocation.y, Config.EditLocation.z)
+        SetBlipSprite(blip, 184) -- Change number for different icon
+        SetBlipDisplay(blip, 4)
+        SetBlipScale(blip, 0.8)
+        SetBlipColour(blip, 2) -- Red color
+        SetBlipAsShortRange(blip, true)
+        BeginTextCommandSetBlipName("STRING")
+        AddTextComponentString(Config.Translations.editor.blipName)
+        EndTextCommandSetBlipName(blip)
+    end
 end)
 
 RegisterNUICallback('clearMagazine', function(data, cb)
@@ -367,7 +454,6 @@ RegisterNUICallback('clearMagazine', function(data, cb)
     cb({})
 end)
 
--- Add this to your existing UseItem function or wherever you open the magazine
 RegisterNetEvent('fd-magazine:client:openMagazine')
 AddEventHandler('fd-magazine:client:openMagazine', function()
     openMagazine()
@@ -379,7 +465,6 @@ RegisterNUICallback('updatePageOrder', function(data, cb)
     cb({})
 end)
 
--- Add this NUI callback for focus control
 RegisterNUICallback('setNuiFocus', function(data, cb)
     if isReadingMagazine or data.focus then
         SetNuiFocus(data.focus, data.cursor)
@@ -387,19 +472,19 @@ RegisterNUICallback('setNuiFocus', function(data, cb)
     cb('ok')
 end)
 
--- Initialize when resource starts
+RegisterNUICallback('getConfig', function(data, cb)
+    SendConfigToNUI()
+    cb('ok')
+end)
+
 CreateThread(function()
-    -- Wait for QBCore to be ready
     while QBCore == nil do
         QBCore = exports['qb-core']:GetCoreObject()
         Wait(100)
     end
 
-    -- Only initialize newsstands if explicitly enabled
     if Config.Magazine.enableBuyFromProps == true then
-        -- Initialize target system based on configuration
         if Config.TargetSystem == 'qb' then
-            -- QB-Target Configuration
             exports['qb-target']:AddTargetModel(Config.NewstandProps, {
                 options = {
                     {
@@ -413,7 +498,6 @@ CreateThread(function()
                 distance = 2.0
             })
         elseif Config.TargetSystem == 'ox' then
-            -- OX-Target Configuration
             exports.ox_target:addModel(Config.NewstandProps, {
                 {
                     name = 'buy_magazine',
@@ -428,7 +512,6 @@ CreateThread(function()
     end
 end)
 
--- Add these RegisterNUICallback functions for edition handling
 RegisterNUICallback('getEditionPages', function(data, cb)
     local editionNumber = data.edition_number
     local readOnly = data.read_only or false
@@ -443,14 +526,11 @@ RegisterNUICallback('createEdition', function(data, cb)
 end)
 
 RegisterNUICallback('closeEditions', function(data, cb)
-    -- Reset state flags
     isReadingMagazine = false
     isEditionsOpen = false
     
-    -- Force focus off to ensure input returns to the game
     forceFocusOff()
     
-    -- Hide all UI elements
     SendNUIMessage({
         action = "hide"
     })
@@ -459,35 +539,28 @@ RegisterNUICallback('closeEditions', function(data, cb)
 end)
 
 RegisterNUICallback('backToEditions', function(data, cb)
-    -- Reset the editions open flag
     isEditionsOpen = true
     
-    -- Request editions list
     TriggerServerEvent('fd-magazine:server:getEditions')
     
-    -- Ensure focus is maintained
     SetNuiFocus(true, true)
     
     cb('ok')
 end)
 
--- Add this with your other RegisterNUICallback functions
 RegisterNUICallback('publishEdition', function(data, cb)
     local editionNumber = data.edition_number
     TriggerServerEvent('fd-magazine:server:publishEdition', editionNumber)
     cb('ok')
 end)
 
--- Add this event handler to receive the updated edition data after publishing
 RegisterNetEvent('fd-magazine:client:editionPublished')
 AddEventHandler('fd-magazine:client:editionPublished', function(edition)
-    -- Update the UI to reflect the changes
     SendNUIMessage({
         action = "editionPublished",
         edition = edition
     })
     
-    -- Show a notification
     QBCore.Functions.Notify("Edition published successfully!", "success")
 end)
 
@@ -500,7 +573,6 @@ RegisterCommand('magazinedebug', function()
     })
 end, false)
 
--- Add this at the top of the file, after your variables
 exports('useMagazine', function(data, slot)
     if not isReadingMagazine then
         local itemData = {
