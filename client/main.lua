@@ -7,9 +7,9 @@ local isEditionsOpen = false
 
 local function stopMagazineAnimation()
     local anim = Config.Magazine.animation
-    ClearPedTasks(PlayerPedId()) -- Force clear all animations
+    ClearPedTasks(PlayerPedId())
     StopAnimTask(PlayerPedId(), anim.dict, anim.name, 1.0)
-    RemoveAnimDict(anim.dict) -- Clear the animation dictionary from memory
+    RemoveAnimDict(anim.dict) 
 end
 
 local function forceFocusOff()
@@ -194,39 +194,37 @@ CreateThread(function()
                 }
             }
         })
-    end
+    elseif Config.TargetSystem == 'marker' then
+        while true do
+            Wait(0)
+            local ped = PlayerPedId()
+            local pos = GetEntityCoords(ped)
+            local dist = #(pos - Config.EditLocation)
 
-    while true do
-        Wait(0)
-        local ped = PlayerPedId()
-        local pos = GetEntityCoords(ped)
-        local dist = #(pos - Config.EditLocation)
+            DrawMarker(2,
+                    Config.EditLocation.x,
+                    Config.EditLocation.y,
+                    Config.EditLocation.z + 1.0,
+                    0.0, 0.0, 0.0,
+                    0.0, 0.0, 0.0,
+                    0.5, 0.5, 0.5,
+                    255, 0, 0, 100,
+                    true, true, 2,
+                    false, nil, nil, false)
 
-        if dist < 10.0 then
-            DrawMarker(2, 
-                Config.EditLocation.x, 
-                Config.EditLocation.y, 
-                Config.EditLocation.z + 1.0,
-                0.0, 0.0, 0.0, 
-                0.0, 0.0, 0.0, 
-                0.5, 0.5, 0.5,
-                255, 0, 0, 100,
-                true, true, 2, 
-                false, nil, nil, false)
-            
             if dist < 1.5 then
                 DrawText3D(
-                    Config.EditLocation.x, 
-                    Config.EditLocation.y, 
-                    Config.EditLocation.z + 1.5,
-                    Config.Translations.editor.editText
+                        Config.EditLocation.x,
+                        Config.EditLocation.y,
+                        Config.EditLocation.z + 1.5,
+                        Config.Translations.editor.editText
                 )
                 if IsControlJustPressed(0, 38) then -- E key
                     openEditor()
                 end
             end
+            Wait(0)
         end
-        Wait(0)
     end
 end)
 
