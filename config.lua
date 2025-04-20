@@ -3,7 +3,7 @@ Config = {}
 -- Inventory system: 'qb', 'ox', or 'qx'
 Config.InventoryType = 'qb'
 
--- Target system: 'qb' or 'ox'
+-- Target system: 'qb' or 'ox' or 'marker'
 Config.TargetSystem = 'qb'
 
 -- Edit location
