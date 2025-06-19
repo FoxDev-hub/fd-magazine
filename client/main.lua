@@ -1,4 +1,11 @@
-local QBCore = exports['qb-core']:GetCoreObject()
+-- Framework detection and initialization
+local Framework = nil
+local QBCore = nil
+
+if Config.Framework ~= 'esx' then
+    QBCore = exports['qb-core']:GetCoreObject()
+end
+
 local isReadingMagazine = false
 local currentPage = 1
 local magazinePages = {}
@@ -7,9 +14,9 @@ local isEditionsOpen = false
 
 local function stopMagazineAnimation()
     local anim = Config.Magazine.animation
-    ClearPedTasks(PlayerPedId())
+    ClearPedTasks(PlayerPedId()) -- Force clear all animations
     StopAnimTask(PlayerPedId(), anim.dict, anim.name, 1.0)
-    RemoveAnimDict(anim.dict) 
+    RemoveAnimDict(anim.dict) -- Clear the animation dictionary from memory
 end
 
 local function forceFocusOff()
@@ -19,22 +26,57 @@ local function forceFocusOff()
     TriggerEvent("fd-magazine:client:forceFocusOff")
 end
 
-RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
-    isReadingMagazine = false
-    SetNuiFocus(false, false)
-    SendNUIMessage({
-        action = "hide"
-    })
-end)
+local function GetPlayerData()
+    if Config.Framework == 'esx' then
+        return ESX.GetPlayerData()
+    else
+        return QBCore.Functions.GetPlayerData()
+    end
+end
 
-RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
-    isReadingMagazine = false
-    SetNuiFocus(false, false)
-    SendNUIMessage({
-        action = "hide"
-    })
-    stopMagazineAnimation()
-end)
+local function ShowNotification(message, type)
+    if Config.Framework == 'esx' then
+        ESX.ShowNotification(message)
+    else
+        QBCore.Functions.Notify(message, type)
+    end
+end
+
+if Config.Framework == 'esx' then
+    RegisterNetEvent('esx:playerLoaded', function()
+        isReadingMagazine = false
+        SetNuiFocus(false, false)
+        SendNUIMessage({
+            action = "hide"
+        })
+    end)
+
+    RegisterNetEvent('esx:onPlayerLogout', function()
+        isReadingMagazine = false
+        SetNuiFocus(false, false)
+        SendNUIMessage({
+            action = "hide"
+        })
+        stopMagazineAnimation()
+    end)
+else
+    RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
+        isReadingMagazine = false
+        SetNuiFocus(false, false)
+        SendNUIMessage({
+            action = "hide"
+        })
+    end)
+
+    RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
+        isReadingMagazine = false
+        SetNuiFocus(false, false)
+        SendNUIMessage({
+            action = "hide"
+        })
+        stopMagazineAnimation()
+    end)
+end
 
 AddEventHandler('onResourceStart', function(resourceName)
     if (GetCurrentResourceName() ~= resourceName) then
@@ -57,10 +99,14 @@ AddEventHandler('onResourceStop', function(resourceName)
 end)
 
 local function hasRequiredJob()
-    local Player = QBCore.Functions.GetPlayerData()
+    local Player = GetPlayerData()
     if not Player then return false end
     
-    return Config.AuthorizedJobs[Player.job.name] == true
+    if Config.Framework == 'esx' then
+        return Config.AuthorizedJobs[Player.job.name] == true
+    else
+        return Config.AuthorizedJobs[Player.job.name] == true
+    end
 end
 
 local function SendConfigToNUI()
@@ -78,7 +124,6 @@ local function openMagazine(pages, edition)
         exports['qx-inventory']:closeInventory()
     end
 
-    -- Play animation using config settings
     local anim = Config.Magazine.animation
     RequestAnimDict(anim.dict)
     while not HasAnimDictLoaded(anim.dict) do
@@ -88,8 +133,8 @@ local function openMagazine(pages, edition)
 
     isReadingMagazine = true
     SetNuiFocus(true, true)
-    SetNuiFocusKeepInput(true)
-    
+    SetNuiFocusKeepInput(true) -- This allows keyboard inputs while NUI is focused
+
     CreateThread(function()
         while isReadingMagazine do
             DisableAllControlActions(0)
@@ -117,7 +162,7 @@ local function openMagazine(pages, edition)
         end
     end)
 
-    SendConfigToNUI() -- Send config first
+    SendConfigToNUI()
     SendNUIMessage({
         action = "openMagazine",
         pages = pages,
@@ -126,15 +171,15 @@ local function openMagazine(pages, edition)
 end
 
 local function openEditor()
-    local Player = QBCore.Functions.GetPlayerData()
+    local Player = GetPlayerData()
     
     if not hasRequiredJob() then
-        QBCore.Functions.Notify("You are not authorized to edit the magazine!", "error")
+        ShowNotification("You are not authorized to edit the magazine!", "error")
         return
     end
     
     SetNuiFocus(true, true)
-    SendConfigToNUI() -- Send config first
+    SendConfigToNUI()
     TriggerServerEvent('fd-magazine:server:getEditions')
 end
 
@@ -151,9 +196,9 @@ local function openEditorForEdition(edition, pages, readOnly)
     })
     
     if readOnly then
-        QBCore.Functions.Notify("Viewing published edition: " .. edition.title, "primary")
+        ShowNotification("Viewing published edition: " .. edition.title, "primary")
     else
-        QBCore.Functions.Notify("Editor opened for edition: " .. edition.title, "success")
+        ShowNotification("Editor opened for edition: " .. edition.title, "success")
     end
 end
 
@@ -195,6 +240,7 @@ CreateThread(function()
             }
         })
     elseif Config.TargetSystem == 'marker' then
+        -- Marker system
         while true do
             Wait(0)
             local ped = PlayerPedId()
@@ -230,11 +276,13 @@ end)
 
 RegisterNetEvent('fd-magazine:client:useMagazine', function(itemData)
     if not isReadingMagazine then
+        -- Pass the item data to the server
         TriggerServerEvent('fd-magazine:server:getMagazinePages', false, itemData)
     end
 end)
 
 RegisterNetEvent('fd-magazine:client:receiveMagazinePages', function(pages, isEditor, edition, readOnly)
+    -- Ensure pages is always an array
     if not pages then
         pages = {}
     end
@@ -248,7 +296,7 @@ RegisterNetEvent('fd-magazine:client:receiveMagazinePages', function(pages, isEd
                 action = 'openEditor',
                 pages = pages
             })
-            QBCore.Functions.Notify("Editor opened", "success")
+            ShowNotification("Editor opened", "success")
         end
     else
         openMagazine(pages, edition)
@@ -288,7 +336,7 @@ RegisterNUICallback('updatePages', function(data)
 end)
 
 RegisterNUICallback('notify', function(data, cb)
-    QBCore.Functions.Notify(data.message, data.type)
+    ShowNotification(data.message, data.type)
     cb('ok')
 end)
 
@@ -324,7 +372,7 @@ Citizen.CreateThread(function()
             EnableAllControlActions(0)
             EnableAllControlActions(1)
             EnableAllControlActions(2)
-            Wait(500) -- Add a small delay before allowing map to be opened again
+            Wait(500)
         end
     end
 end)
@@ -357,10 +405,10 @@ end
 
 CreateThread(function()
     local blip = AddBlipForCoord(Config.EditLocation.x, Config.EditLocation.y, Config.EditLocation.z)
-    SetBlipSprite(blip, 184) -- Change number for different icon
+    SetBlipSprite(blip, 184)
     SetBlipDisplay(blip, 4)
     SetBlipScale(blip, 0.8)
-    SetBlipColour(blip, 2) -- Red color
+    SetBlipColour(blip, 2)
     SetBlipAsShortRange(blip, true)
     BeginTextCommandSetBlipName("STRING")
     AddTextComponentString(Config.Translations.editor.blipName)
@@ -391,9 +439,22 @@ RegisterNUICallback('setNuiFocus', function(data, cb)
 end)
 
 CreateThread(function()
-    while QBCore == nil do
-        QBCore = exports['qb-core']:GetCoreObject()
-        Wait(100)
+    if Config.Framework == 'esx' then
+        while ESX == nil do
+            ESX = exports['es_extended']:getSharedObject()
+            if not ESX then
+                ESX = exports['esx']:getSharedObject()
+            end
+            if not ESX then
+                ESX = exports['es_extended']:GetSharedObject()
+            end
+            Wait(100)
+        end
+    else
+        while QBCore == nil do
+            QBCore = exports['qb-core']:GetCoreObject()
+            Wait(100)
+        end
     end
 
     if Config.Magazine.enableBuyFromProps == true then
@@ -474,13 +535,13 @@ AddEventHandler('fd-magazine:client:editionPublished', function(edition)
         edition = edition
     })
     
-    QBCore.Functions.Notify("Edition published successfully!", "success")
+    ShowNotification("Edition published successfully!", "success")
 end)
 
 RegisterCommand('magazinedebug', function()
     TriggerEvent('fd-magazine:client:useMagazine', {
         metadata = {
-            edition = 1  -- Test with edition 1
+            edition = 1
         }
     })
 end, false)

@@ -1,10 +1,11 @@
-# FoxDev-Magazine
+# FD-Magazine
 
-An interactive magazine system for FiveM servers using the QB-Core/Qbox framework. Create, edit, and read digital magazines in-game with a modern and intuitive interface. Support for multiple editions and player-specific magazine ownership.
+An interactive magazine system for FiveM servers supporting both QB-Core and ESX frameworks. Create, edit, and read digital magazines in-game with a modern and intuitive interface. Support for multiple editions and player-specific magazine ownership.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-1.0.0-green.svg)
+![Version](https://img.shields.io/badge/version-1.1.0-green.svg)
 ![QB-Core](https://img.shields.io/badge/qb--core-latest-red)
+![ESX](https://img.shields.io/badge/ESX-Legacy-blue)
 ![QBox](https://img.shields.io/badge/QBox-March%202025-purple)
 
 ## 🌟 Features
@@ -27,7 +28,7 @@ An interactive magazine system for FiveM servers using the QB-Core/Qbox framewor
   - Player-specific magazine ownership
   - Edition tracking
   - Purchase history
-  - OX Inventory integration
+  - Multiple inventory system support (OX, QB, QS, QX)
 
 - **Database Integration**
   - Multiple edition support
@@ -35,62 +36,130 @@ An interactive magazine system for FiveM servers using the QB-Core/Qbox framewor
   - Player ownership tracking
   - Edition status management
 
+- **Framework Support**
+  - QB-Core Framework
+  - ESX Legacy Framework
+  - Automatic framework detection
+
 ## 📋 Requirements
 
-- QB-Core Framework
-- QBox
+- QB-Core Framework **OR** ESX Legacy Framework
+- oxmysql
+- One of the following inventory systems:
+  - ox_inventory (recommended)
+  - QB-Core inventory
+  - QS-Inventory
+  - QX-Inventory
+- FiveM Server
 
-## 📦 Installation
+## ⚙️ Installation
 
-1. Download the resource
-2. Place it in your resources folder, **The root folder has to be called "fd-magazine"
-3. Add `ensure fd-magazine` to your server.cfg
-4. Import the SQL file
-5. Configure the resource in `config.lua`
+1. **Download & Place Files**
+   ```bash
+   cd resources
+   git clone https://github.com/yourusername/fd-magazine
+   ```
 
-## 🛠️ Inventory Setup
+2. **Database Setup**
+   The resource uses two main tables:
+   - `magazine_editions`: Stores different magazine editions
+   - `magazine_pages`: Stores pages for each edition
 
-### For QB-Inventory (qb-core/shared/items.lua)
-```lua
-['magazine'] = {
-    ['name'] = 'magazine',
-    ['label'] = 'Los Santos Magazine',
-    ['weight'] = 500,
-    ['type'] = 'item',
-    ['image'] = 'magazine.png',
-    ['unique'] = false,
-    ['useable'] = true,
-    ['shouldClose'] = true,
-    ['combinable'] = nil,
-    ['description'] = 'A glossy magazine about Los Santos life'
-}
-```
+   Import the SQL file from `sql/magazine.sql` which will create all necessary tables and indexes.
 
-### For ox_inventory (ox_inventory/data/items.lua)
-```lua
-['magazine'] = {
-    label = 'Magazine',
-    weight = 500,
-    stack = false,
-    close = false,
-    description = 'A readable magazine',
-    consume = 0,
-    client = {
-        export = 'fd-magazine.useMagazine'
-    }
-}
-```
+3. **Add to Server.cfg**
+   ```lua
+   ensure oxmysql  # Make sure this loads first
+   ensure fd-magazine
+   ```
+
+4. **Framework Configuration**
+   Edit `config.lua` and set your framework:
+   ```lua
+   Config.Framework = 'esx'  -- or 'qb' for QB-Core
+   ```
+
+5. **Inventory Setup**
+
+   **For OX Inventory:**
+   Add to your `ox_inventory/data/items.lua`:
+   ```lua
+   ['magazine'] = {
+       label = 'Magazine',
+       weight = 500,
+       stack = false,
+       close = false,
+       description = 'A readable magazine',
+       consume = 0,
+       client = {
+           export = 'fd-magazine.useMagazine'
+       }
+   }
+   ```
+
+   **For QB-Core Inventory:**
+   Add to your `qb-core/shared/items.lua`:
+   ```lua
+   ['magazine'] = {
+       name = 'magazine',
+       label = 'Magazine',
+       weight = 500,
+       type = 'item',
+       image = 'magazine.png',
+       unique = false,
+       useable = true,
+       shouldClose = false,
+       combinable = nil,
+       description = 'A readable magazine'
+   }
+   ```
+
+   **For ESX with ox_inventory:**
+   The item will be automatically registered when using ESX with ox_inventory.
 
 ## 🔧 Configuration
 
-Edit `config.lua` to customize
+Edit `config.lua` to customize:
+
+```lua
+Config = {}
+
+-- Framework selection ('qb' or 'esx')
+Config.Framework = 'esx'
+
+-- Inventory system ('qb', 'ox', 'qs', 'qx')
+Config.InventoryType = 'ox'
 
 -- Jobs that can access the editor
 Config.AuthorizedJobs = {
     ['news'] = true,
-    ['admin'] = true
+    ['admin'] = true,
+    ['unemployed'] = true  -- for testing
+}
+
+-- Magazine settings
+Config.Magazine = {
+    price = 25,
+    weight = 500,
+    maxPages = 20
+}
+
+-- Image Settings
+Config.MaxImageSize = 5 * 1024 * 1024  -- 5MB
+Config.AllowedImageTypes = {
+    'jpg',
+    'jpeg',
+    'png',
+    'gif'
 }
 ```
+
+## 📱 Commands
+
+- `/magazine` - Open owned magazine editions
+- `/magazineeditor` - Open editor (authorized jobs only)
+- `/createedition [title]` - Create new edition
+- `/publishedition [number]` - Publish an edition
 
 ## 🎮 Usage
 
@@ -104,11 +173,19 @@ Config.AuthorizedJobs = {
 4. Press ESC to close
 
 ### Editing a Magazine
-1. Select or create an edition
-2. Add pages via URL input
-3. Drag & drop to reorder
-4. Save changes
-5. Publish when ready
+1. Use `/magazineeditor` command
+2. Select or create an edition
+3. Add pages via URL input
+4. Drag & drop to reorder
+5. Save changes
+6. Publish when ready
+
+### Managing Editions
+1. Create new editions with `/createedition`
+2. Add pages to specific editions
+3. Set active status
+4. Publish when ready
+5. Track player ownership
 
 ## 🖼️ Image Guidelines
 
@@ -127,16 +204,22 @@ Config.AuthorizedJobs = {
 2. **Editor Not Opening**
    - Verify job permissions
    - Check server console for errors
+   - Ensure framework is properly configured
 
 3. **Database Issues**
    - Verify oxmysql is running
    - Check table relationships
    - Verify edition exists before adding pages
 
-4. **Edition Access Issues**
-   - Check if edition is published
-   - Verify player ownership
-   - Check edition status (active/inactive)
+4. **Framework Detection Issues**
+   - Check if ESX/QB-Core is properly loaded
+   - Verify framework configuration in config.lua
+   - Check server console for framework detection messages
+
+5. **Inventory Integration Issues**
+   - Verify inventory system configuration
+   - Check if item is properly registered
+   - Ensure inventory exports are available
 
 ## 🛠️ Development
 
@@ -156,12 +239,11 @@ magazine_pages
 - image_url
 - edition_number (FK)
 - created_at
-
 ```
 
 ### File Structure
 ```
-qb-magazine/
+fd-magazine/
 ├── client/
 │   └── main.lua
 ├── server/
@@ -169,11 +251,13 @@ qb-magazine/
 ├── html/
 │   ├── index.html
 │   ├── style.css
-│   └── script.min.js
+│   ├── script.js
+│   └── magnifier.css
 ├── sql/
 │   └── magazine.sql
 ├── config.lua
-└── fxmanifest.lua
+├── fxmanifest.lua
+└── README.md
 ```
 
 ## 📝 License
@@ -182,11 +266,16 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 🤝 Support
 
-- Discord: [https://discord.gg/ASTjxYZqVP]
+- Discord: [Your Discord Server]
+- GitHub Issues: [Repository Issues]
+- Documentation: [Wiki Link]
 
 ## 🙏 Credits
 
-- FoxDev
+- QB-Core Framework Team
+- ESX Legacy Team
+- Turn.js Library
+- FiveM Community
 
 ## 🔄 Updates
 

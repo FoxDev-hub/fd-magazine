@@ -1,19 +1,20 @@
 Config = {}
 
 -- Inventory system: 'qb', 'ox', or 'qx'
-Config.InventoryType = 'qb'
+Config.InventoryType = 'ox'
 
--- Target system: 'qb' or 'ox' or 'marker'
-Config.TargetSystem = 'qb'
+-- Target system: 'qb' or 'ox'
+Config.TargetSystem = 'ox'
+
+-- Framework (qb, esx)
+Config.Framework = 'esx'
 
 -- Edit location
 Config.EditLocation = vector3(-1058.06, -248.11, 44.02)
 
 -- Authorized jobs that can edit the magazine
 Config.AuthorizedJobs = {
-    ['journalist'] = true,
-    ['reporter'] = true,
-    ['news'] = true
+    ['unemployed'] = true,
 }
 
 -- Magazine settings
@@ -103,7 +104,7 @@ Config.Translations = {
         pageAltText = "Page",
         editText = "Press [E] to edit magazine",
         blipName = "Magazine Editor",
-        targetText = "Magazine Editor"
+        targetText = "Magazine editor"
     },
     confirmDialog = {
         title = "Confirm Action",
